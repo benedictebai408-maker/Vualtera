@@ -1,0 +1,54 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  passwordHash String
+  createdAt DateTime @default(now())
+  wallets Wallet[]
+}
+
+model Wallet {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  currency String
+  availableBalanceBigint BigInt @default(0)
+  ledgerBalanceBigint BigInt @default(0)
+  ledgerEntries LedgerEntry[]
+}
+
+model LedgerEntry {
+  id String @id @default(uuid())
+  entryRef String
+  walletId String
+  wallet Wallet @relation(fields: [walletId], references: [id])
+  amountBigint BigInt
+  balanceAfter BigInt
+  entryType String
+  source String
+  metadata Json?
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id String @id @default(uuid())
+  externalId String? @unique
+  userId String?
+  walletId String?
+  amountBigint BigInt
+  currency String
+  status String
+  metadata Json?
+  initiatedAt DateTime @default(now())
+  completedAt DateTime?
+}
+
+model EmailLog {
+  id String @id @default(uuid())
+  recipient String
+  subject String
+  status String
+  createdAt DateTime @default(now())
+}
